@@ -1,0 +1,28 @@
+{
+  "name": "node",
+  "version": "1.0.0",
+  "description": "Сервер для приложения массовых опросов и тестирования. Обеспечивает маршрутизацию, обработку данных, управление пользователями, хранение результатов и взаимодействие с Telegram Mini Apps.",
+  "main": "server.js",
+  "keywords": [
+    "survey",
+    "testing",
+    "webapp",
+    "nodejs",
+    "telegram mini app",
+    "api",
+    "backend",
+    "mass survey",
+    "polling system",
+    "user data",
+    "analytics",
+    "scalable"
+  ],
+  "scripts": {
+    "start:dev": "nodemon server.js"
+  },
+  "author": "undefined <t.me/itsZeroFour>",
+  "license": "ISC",
+  "dependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
