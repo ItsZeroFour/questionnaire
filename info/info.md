@@ -1,5 +1,7 @@
 ## Ссылки и материалы для разработки приложения
 
+---
+
 **Github Репозиторий**
 `https://github.com/ItsZeroFour/questionnaire`
 
