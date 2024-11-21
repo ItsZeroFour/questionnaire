@@ -58,3 +58,5 @@ _Все кроме лидера группы: Модуль авторизаци�
 `mongodb+srv://questionnaire:<db_password>@cluster0.zjqrx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
 
 Пароль запрашивать у лидера команды
+
+<a href="https://www.mongodb.com/docs/languages/cpp/cpp-driver/current/#installation">Ознакомьтесь с инструкциями по установке драйвера MongoDB C++</a>
