@@ -53,7 +53,7 @@ _Все кроме лидера группы: Модуль авторизаци�
 
 **URI Базы Данных:**
 
-<img src="https://ibb.co/x5rpmxC" alt="mongoDB C++" width="100%" height="auto"/>
+<img src="https://i.ibb.co/6sq3vjn/image.png" alt="mongoDB C++" width="100%" height="auto"/>
 
 `mongodb+srv://questionnaire:<db_password>@cluster0.zjqrx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
 
