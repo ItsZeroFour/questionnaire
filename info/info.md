@@ -27,7 +27,9 @@
 3.  `git push` - Загрузка изменений в репозиторий
 
 <a href="https://chatgpt.com/share/673f0b00-b4b8-8010-b92a-13ad302d89bc">Как начать работать с Git</a> (Вам хватит информации до 5 пункта)
+
 <a href="https://www.youtube.com/watch?v=EeARyFrZsnU">Что такое Git и для чего он нужен</a>
+
 <a href="https://chatgpt.com/share/673f111f-3134-8010-a9af-08938a2a0607">Как лидеру команды добавить всех участников в git, что бы вместе работать над проектом</a> (Действия по созданию ssh нужно делать в GitBash терминале)
 
 ---
@@ -55,7 +57,7 @@ _Все кроме лидера группы: Модуль авторизаци�
 
 ## 📟 База данных MongoDB
 
-> После создания базы данных Mongo, что бы она у вас работала, вам необходимо в право боковой панели найти вкладку Network Access. В этой вкладке снизу "Actions" будет кнопка "Edit". Нажмите на нее и после нажмите на Access from anywhere. Теперь вы можете работать с базой данных без региональных ограничений 
+> После создания базы данных Mongo, что бы она у вас работала, вам необходимо в право боковой панели найти вкладку Network Access. В этой вкладке снизу "Actions" будет кнопка "Edit". Нажмите на нее и после нажмите на Access from anywhere. Теперь вы можете работать с базой данных без региональных ограничений
 
 **URI Базы Данных:**
 
@@ -67,8 +69,8 @@ _Все кроме лидера группы: Модуль авторизаци�
 
 <a href="https://www.mongodb.com/docs/languages/cpp/cpp-driver/current/#installation">Ознакомьтесь с инструкциями по установке драйвера MongoDB C++</a>
 
+### Полный пример кода для иницализации базы данных MongoDB:\*
 
-### Полный пример кода для иницализации базы данных MongoDB:*
 ```
 #include <bsoncxx/json.hpp>
 #include <mongocxx/client.hpp>
@@ -79,18 +81,18 @@ int main()
   {
     // Create an instance.
     mongocxx::instance inst{};
-    
+
     const auto uri = mongocxx::uri{"mongodb+srv://questionnaire:<db_password>@cluster0.zjqrx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"};
 
     // Set the version of the Stable API on the client
     mongocxx::options::client client_options;
     const auto api = mongocxx::options::server_api{mongocxx::options::server_api::version::k_version_1};
     client_options.server_api_opts(api);
-    
+
     // Setup the connection and get a handle on the "admin" database.
     mongocxx::client conn{ uri, client_options };
     mongocxx::database db = conn["admin"];
-    
+
     // Ping the database.
     const auto ping_cmd = bsoncxx::builder::basic::make_document(bsoncxx::builder::basic::kvp("ping", 1));
     db.run_command(ping_cmd.view());
