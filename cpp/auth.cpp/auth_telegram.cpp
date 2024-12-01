@@ -4,6 +4,7 @@
 #include "telegram_auth.hpp"
 using namespace std;
 
+// Проверка подлинности полученных данных
 bool verify_TelegramSignature(const nlohmann::json& data){
     const string secretKey = "YOUR_SECRET_KEY";
     string checkString = " ";
