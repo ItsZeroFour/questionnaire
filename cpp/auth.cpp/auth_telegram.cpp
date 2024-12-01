@@ -1,5 +1,5 @@
-#include <openssl/hmac.h>
-#include <nlohmann/json.hpp>
+#include <openssl/hmac.h>  // Работа с библиотекой openssl
+#include <nlohmann/json.hpp> // Работа с json
 #include <string>
 #include "telegram_auth.hpp"
 using namespace std;
