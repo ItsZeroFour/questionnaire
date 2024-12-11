@@ -1,0 +1,22 @@
+cmake_minimum_required(VERSION 3.10)
+project(auth_module)
+
+set(CMAKE_CXX_STANDARD 17)
+
+# Добавляем файлы в проект
+include_directories(include)
+add_executable(auth_module 
+find_package(mongocxx REQUIRED)
+find_package(bsoncxx REQUIRED)
+find_package(nlohmann_json REQUIRED)
+target_link_libraries(auth_module PRIVATE nlohmann_json::nlohmann_json)
+
+target_link_libraries(auth_module PRIVATE mongocxx bsoncxx)
+    src/auth_module.cpp 
+    src/permission_manager.cpp 
+    src/telegram_auth.cpp 
+    src/web_auth.cpp 
+    main.cpp
+
+
+)

@@ -1,6 +1,12 @@
+#include "auth_module.hpp"
+#include "permission_manager.hpp"
+#include "mongo_manager.hpp"
+#include <bsoncxx/json.hpp>
 #include <iostream>
+#include <stdexcept> // Добавлен для invalid_argument
+#include <mongocxx/exception/logic_error.hpp> //для обработки исключений mongo
 #include <auth_module.hpp>
-#include <nlohman/json.hpp>
+#include "nlohman/json.hpp"
 
 using namespace std;
 
