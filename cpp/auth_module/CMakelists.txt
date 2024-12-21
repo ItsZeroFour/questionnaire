@@ -3,20 +3,11 @@ project(auth_module)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# Добавляем файлы в проект
-include_directories(include)
-add_executable(auth_module 
-find_package(mongocxx REQUIRED)
-find_package(bsoncxx REQUIRED)
-find_package(nlohmann_json REQUIRED)
-target_link_libraries(auth_module PRIVATE nlohmann_json::nlohmann_json)
+find_package(Pistache REQUIRED)
+find_package(Mongocxx REQUIRED)
+find_package(OpenSSL REQUIRED)
 
-target_link_libraries(auth_module PRIVATE mongocxx bsoncxx)
-    src/auth_module.cpp 
-    src/permission_manager.cpp 
-    src/telegram_auth.cpp 
-    src/web_auth.cpp 
-    main.cpp
+add_executable(auth_module src/main.cpp src/routes.cpp src/oauth.cpp src/db.cpp src/token.cpp)
 
-
-)
+target_include_directories(auth_module PRIVATE include)
+target_link_libraries(auth_module PRIVATE Pistache mongocxx OpenSSL::Crypto)
