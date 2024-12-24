@@ -1,4 +1,4 @@
-  import asyncio
+import asyncio
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
@@ -27,7 +27,7 @@ async def start_command(message: types.Message):
 
 @dp.message(lambda message: message.text == "➕ Создать опрос")
 async def create_poll_start(message: types.Message):
-    # Устанавливаем начальное состояние для опроса
+    
     active_poll[message.from_user.id] = {"questions": [], "state": "waiting_for_question"}
     await message.answer("Введите вопрос для создания опроса: ")
 
@@ -74,3 +74,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
