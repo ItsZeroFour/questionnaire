@@ -30,7 +30,7 @@ app.use(
 );
 
 /* ROUTES */
-app.use("/user", AuthRoutes);
+app.use("/server/user", AuthRoutes);
 
 /* START FUNCTION */
 async function start() {
