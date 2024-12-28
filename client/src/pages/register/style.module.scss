@@ -289,3 +289,24 @@
     }
   }
 }
+
+.register__right__wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  input {
+    width: 100%;
+    background: none;
+    padding: 25px;
+    border: 1px solid var(--color-black);
+    border-radius: 20px;
+  }
+
+  button {
+    padding: 25px;
+    background: var(--color-black);
+    border-radius: 20px;
+    color: var(--color-white);
+  }
+}
