@@ -56,7 +56,14 @@ export const registerUser = async (req, res) => {
       password: hashPassword,
     });
 
-    const user = await doc.save();
+    await doc.save();
+
+    if (req.body.discipline !== "Студент") {
+      await UserModel.findOneAndUpdate(
+        { email: req.body.email },
+        { verifyDiscipline: false }
+      );
+    }
 
     const verificationCode = generateUniqueCode();
 
@@ -150,6 +157,87 @@ export const authUser = async (req, res) => {
     console.log(err);
     res.status(500).json({
       message: "Не удалось войти",
+    });
+  }
+};
+
+export const loginUser = async (req, res) => {
+  try {
+    const user = await UserModel.findOne({ email: req.body.email });
+
+    if (!user) {
+      res.status(404).json({
+        message: "Неверный логин или пароль",
+      });
+
+      return;
+    }
+
+    const isValidPassword = await bcrypt.compare(
+      req.body.password,
+      user.password
+    );
+
+    if (!isValidPassword) {
+      res.status(400).json({ message: "Неверный логин или пароль" });
+      return;
+    }
+
+    const verificationCode = generateUniqueCode();
+
+    try {
+      await transporter.sendMail({
+        from: process.env.EMAIL,
+        to: req.body.email,
+        subject: "Код верификации",
+        text: `Ваш код верификации: ${verificationCode}`,
+      });
+
+      await UserModel.findOneAndUpdate(
+        { email: req.body.email },
+        { verificationCode, verified: false }
+      );
+
+      return res.status(200).json({
+        message: "Код успешно отправлен на вашу почту",
+      });
+    } catch (error) {
+      console.error("Error sending email:", error);
+      res.status(500).json({ error: "Failed to send verification code" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "Не удалось авторизоваться",
+    });
+  }
+};
+
+export const handleGithubCallback = async (
+  accessToken,
+  refreshToken,
+  profile,
+  done
+) => {
+  try {
+    const primaryEmail =
+      profile.emails?.find((email) => email.primary)?.value || null;
+
+    console.log(primaryEmail);
+  } catch (err) {
+    return done(err, null);
+  }
+};
+
+export const getUsersByDiscipline = async (req, res) => {
+  try {
+    const students = await UserModel.find({ discipline: "Студент" });
+
+    res.status(200).json(students);
+  } catch (error) {
+    console.error("Ошибка при получении пользователей:", error);
+    res.status(500).json({
+      message: "Не удалось получить пользователей.",
     });
   }
 };

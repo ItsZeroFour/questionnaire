@@ -6,6 +6,11 @@ import helmet from "helmet";
 import morgan from "morgan";
 import mongoose from "mongoose";
 import AuthRoutes from "./routes/AuthRoutes.js";
+import DisciplineRoutes from "./routes/DisciplineRoutes.js";
+// import passport from "passport";
+// import { handleGithubCallback } from "./controllers/AuthControllers.js";
+// import { Strategy as GitHubStrategy } from "passport-github2";
+// import session from "express-session";
 
 dotenv.config({ path: "./.env" });
 const app = express();
@@ -28,9 +33,37 @@ app.use(
     parameterLimit: 1000000,
   })
 );
+// app.use(
+//   session({
+//     secret: process.env.SECRET,
+//     resave: false,
+//     saveUninitialized: false,
+//   })
+// );
+
+// app.use(passport.initialize());
+// app.use(passport.session());
+
+// // Passport Config
+// passport.use(
+//   new GitHubStrategy(
+//     {
+//       clientID: process.env.GITHUB_CLIENT_ID,
+//       clientSecret: process.env.GITHUB_CLIENT_SECRET,
+//       callbackURL: "http://localhost:1488/server/user/github/callback",
+//       scope: ["user:email"],
+//     },
+//     handleGithubCallback
+//   )
+// );
+
+// // Serialize/Deserialize
+// passport.serializeUser((user, done) => done(null, user));
+// passport.deserializeUser((user, done) => done(null, user));
 
 /* ROUTES */
 app.use("/server/user", AuthRoutes);
+app.use("/server/discipline", DisciplineRoutes);
 
 /* START FUNCTION */
 async function start() {

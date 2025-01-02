@@ -1,23 +1,18 @@
 import React, { useEffect, useState } from "react";
 import style from "./style.module.scss";
-import { Link, useNavigate } from "react-router-dom";
-import yandexLogo from "../../assets/icons/auth/yandex.png";
-import githubLogo from "../../assets/icons/auth/github.png";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const Register = () => {
+const SignIn = () => {
   const [quote, setQuote] = useState("");
-  const [openDiscuplinesList, setOpenDiscuplinesList] = useState(false);
-
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [discipline, setDiscipline] = useState("Студент");
-  const [success, setSuccess] = useState(false);
-  const [processing, setProcessing] = useState(false);
   const [code, setCode] = useState("");
+  const [processing, setProcessing] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [checkCodeProcess, setCheckCodeProcess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage2, setErrorMessage2] = useState("");
 
   const navigate = useNavigate();
 
@@ -43,36 +38,42 @@ const Register = () => {
     setQuote(randomElement);
   }, []);
 
-  const registerUser = async () => {
+  const loginUser = async () => {
     try {
+      if (!email || !password) {
+        return setErrorMessage2("Заполните все обязательные поля!");
+      }
+
       setProcessing(true);
       const registerUser = await axios.post(
-        `${process.env.REACT_APP_SERVER_URL}/user/register`,
+        `${process.env.REACT_APP_SERVER_URL}/user/login`,
         {
-          firstName,
-          lastName,
           email,
           password,
-          discipline,
         }
       );
 
       setProcessing(false);
+      setErrorMessage2("");
+
+      setErrorMessage(registerUser?.message);
 
       if (registerUser.status === 200) {
         setSuccess(true);
       }
-
-      console.log(registerUser);
     } catch (err) {
       setProcessing(false);
       console.log(err);
-      alert("Не удалось зарегестрироваться. Ошибка: 500");
+      alert(errorMessage ? errorMessage : "Произошла ошибка при авторизации");
     }
   };
 
   const verifyCode = async () => {
     try {
+      if (!code) {
+        return setErrorMessage2("Заполните все обязательные поля!");
+      }
+
       setCheckCodeProcess(true);
       const verify = await axios.post(
         `${process.env.REACT_APP_SERVER_URL}/user/verifyCode`,
@@ -80,6 +81,7 @@ const Register = () => {
       );
 
       setCheckCodeProcess(false);
+      setErrorMessage2("");
 
       if (verify.status === 200) {
         if ("token" in verify.data) {
@@ -98,68 +100,18 @@ const Register = () => {
   };
 
   return (
-    <section className={style.register}>
-      <aside className={style.register__left}>
+    <section className={style.signin}>
+      <aside className={style.signin__left}>
         <h1>Questionnaire</h1>
         <p>{quote}</p>
       </aside>
-
       {!success ? (
-        <aside className={style.register__right}>
-          <h2>Создайте аккаунт</h2>
+        <aside className={style.signin__right}>
+          <h2>Войти в аккаунт</h2>
 
           <form>
-            <div>
-              <input
-                type="text"
-                onChange={(event) => setFirstName(event.target.value)}
-                placeholder="Имя"
-              />
-              <input
-                type="text"
-                onChange={(event) => setLastName(event.target.value)}
-                placeholder="Фамилия"
-              />
-            </div>
-
-            <div className={style.register__select}>
-              <button
-                type="button"
-                onClick={() => setOpenDiscuplinesList(!openDiscuplinesList)}
-              >
-                {discipline ? discipline : "Выбирите дисциплину"}
-              </button>
-
-              {openDiscuplinesList && (
-                <ul>
-                  <li>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDiscipline("Студент");
-                        setOpenDiscuplinesList(false);
-                      }}
-                    >
-                      Студент
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDiscipline("Алгоритмизация и программирование");
-                        setOpenDiscuplinesList(false);
-                      }}
-                    >
-                      Алгоритмизация и программирование
-                    </button>
-                  </li>
-                </ul>
-              )}
-            </div>
-
             <input
-              type="email"
+              type="text"
               onChange={(event) => setEmail(event.target.value)}
               placeholder="E-mail"
             />
@@ -170,33 +122,13 @@ const Register = () => {
             />
           </form>
 
-          <p>
-            Уже есть аккаунт? <Link to="/signin">Войти</Link>
-          </p>
+          {errorMessage2 && (
+            <p className={style.signin__error}>{errorMessage2}</p>
+          )}
 
-          <button type="button" disabled={processing} onClick={registerUser}>
-            {processing ? "Подождите..." : "Зарегестрироваться"}
+          <button type="button" onClick={loginUser}>
+            {processing ? "Подождите..." : "Войти в аккаунт"}
           </button>
-
-          <div className={style.register__another}>
-            <p>Или войдите при помощи</p>
-
-            <ul>
-              <li>
-                <button>
-                  <img src={yandexLogo} alt="yandex logo" />
-                  <p>Войти при помощи Yandex ID</p>
-                </button>
-              </li>
-
-              <li>
-                <button>
-                  <img src={githubLogo} alt="github logo" />
-                  <p>Войти при помощи GitHub</p>
-                </button>
-              </li>
-            </ul>
-          </div>
         </aside>
       ) : (
         <aside className={style.register__right}>
@@ -213,6 +145,10 @@ const Register = () => {
               placeholder="1abc009"
             />
 
+            {errorMessage2 && (
+              <p className={style.signin__error}>{errorMessage2}</p>
+            )}
+
             <button
               type="button"
               disabled={checkCodeProcess}
@@ -227,4 +163,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default SignIn;
