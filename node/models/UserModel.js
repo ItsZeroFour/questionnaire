@@ -37,8 +37,10 @@ const userSchema = new mongoose.Schema({
     default: [],
   },
 
+  verifyDiscipline: { type: Boolean },
+  githubId: { type: String, unique: true },
   verificationCode: { type: String },
   verified: { type: Boolean, default: false },
 });
 
-export default mongoose.model("user", userSchema);
+export default mongoose.model("User", userSchema);

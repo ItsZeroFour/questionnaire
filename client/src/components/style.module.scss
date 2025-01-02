@@ -1,0 +1,16 @@
+.header {
+  background: #ededed;
+  padding: 20px;
+  border-radius: 30px;
+
+  .header__logo {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    p {
+      font-size: 26px;
+      font-weight: 700;
+    }
+  }
+}
