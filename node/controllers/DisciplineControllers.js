@@ -132,6 +132,56 @@ export const addMembersToDiscipline = async (req, res) => {
   }
 };
 
+export const removeMembersToDiscipline = async (req, res) => {
+  try {
+    const userId = req.body.userId;
+    const disciplineId = req.body.disciplineId;
+
+    if (!userId || !disciplineId) {
+      return res.status(403).json({
+        message: "не удалось получить пользователя или дисциплину",
+      });
+    }
+
+    const user = await UserModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Пользователь не найден",
+      });
+    }
+
+    const discipline = await DisciplineModel.findById(disciplineId);
+
+    if (!discipline) {
+      return res.status(404).json({
+        message: "Дисциплина не найдена",
+      });
+    }
+
+    if (!discipline.members.includes(userId)) {
+      return res.status(400).json({
+        message: "Пользователь не является участником дисциплины",
+      });
+    }
+
+    if (isUserInArray(discipline.admins, req.userId)) {
+      await DisciplineModel.findByIdAndUpdate(disciplineId, {
+        $pull: { members: userId },
+      });
+
+      return res.status(200).json({
+        message: "Успешно!",
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "Не удалось добавить пользователя в дисциплину",
+    });
+  }
+};
+
 export const userDisciplines = async (req, res) => {
   try {
     const userId = req.userId;
@@ -223,7 +273,8 @@ export const createTest = async (req, res) => {
 
 export const getDisciplineTest = async (req, res) => {
   try {
-    const disciplineId = req.body.disciplineId;
+    const { disciplineId } = req.params;
+    const userId = req.userId;
 
     if (!disciplineId) {
       return res.status(400).json({
@@ -231,15 +282,32 @@ export const getDisciplineTest = async (req, res) => {
       });
     }
 
+    if (!userId) {
+      return res.status(400).json({
+        message: "ID пользователя не найдено",
+      });
+    }
+
+    // Находим дисциплину и её тесты
     const findDisciplineTests = await DisciplineModel.findOne({
       _id: disciplineId,
     })
       .populate("tests")
       .exec();
 
-    return res.status(200).json(findDisciplineTests.tests);
+    if (!findDisciplineTests) {
+      return res.status(404).json({
+        message: "Дисциплина не найдена",
+      });
+    }
+
+    const filteredTests = findDisciplineTests.tests.filter((test) =>
+      test.acceptable.includes(userId)
+    );
+
+    return res.status(200).json(filteredTests);
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).json({
       message: "Не удалось получить тесты дисциплины",
     });
@@ -263,6 +331,107 @@ export const getTest = async (req, res) => {
     console.log(err);
     res.status(500).json({
       message: "Не удалось получить тест",
+    });
+  }
+};
+
+export const getAllDisciplineTests = async (req, res) => {
+  try {
+    const { disciplineId } = req.params;
+
+    if (!disciplineId) {
+      return res.status(400).json({
+        message: "ID дисциплины не найдено",
+      });
+    }
+
+    const findDisciplineTests = await DisciplineModel.findOne({
+      _id: disciplineId,
+    })
+      .populate("tests")
+      .exec();
+
+    if (!findDisciplineTests) {
+      return res.status(404).json({
+        message: "Дисциплина не найдена",
+      });
+    }
+
+    return res.status(200).json(findDisciplineTests.tests);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "Не удалось получить тесты",
+    });
+  }
+};
+
+export const deleteTest = async (req, res) => {
+  try {
+    const { testId } = req.params;
+
+    if (!testId) {
+      return res.status(400).json({
+        message: "Не передан id теста",
+      });
+    }
+
+    const deletedTest = await TestModel.findByIdAndDelete(testId);
+
+    if (!deletedTest) {
+      return res.status(404).json({
+        message: "Тест не найден",
+      });
+    }
+
+    const updatedDiscipline = await DisciplineModel.findOneAndUpdate(
+      { tests: testId }, // Найти дисциплину, где testId в массиве tests
+      { $pull: { tests: testId } }, // Удалить testId из массива tests
+      { new: true } // Вернуть обновленный документ
+    );
+
+    if (!updatedDiscipline) {
+      return res.status(404).json({
+        message: "Дисциплина с указанным тестом не найдена",
+      });
+    }
+
+    res.status(200).json({
+      message: "Тест успешно удален",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "Не удалось удалить тест",
+    });
+  }
+};
+
+export const getMembers = async (req, res) => {
+  try {
+    const { disciplineId } = req.params;
+
+    if (!disciplineId) {
+      return res.status(400).json({
+        message: "Не передан id теста",
+      });
+    }
+
+    const members = await DisciplineModel.findById(disciplineId)
+      .populate("members")
+      .exec();
+
+    if (!members) {
+      return res.status(400).json({
+        message: "Не найдено",
+      });
+    }
+
+    return res.status(200).json(members.members);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "Не удалось поулчить учатсников дисциплины",
     });
   }
 };

@@ -6,6 +6,9 @@ import axios from "../../utils/axios";
 const Test = ({ userData }) => {
   const [testData, setTestData] = useState(null);
   const [userId, setUserId] = useState("");
+  const [userAnswers, setUserAnswers] = useState({});
+  const [correctCount, setCorrectCount] = useState(null);
+  const [testCompleted, setTestCompleted] = useState(false);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -19,8 +22,22 @@ const Test = ({ userData }) => {
   const getTest = async () => {
     try {
       const getTestData = await axios.get(`/discipline/get-test/${id}`);
-
       setTestData(getTestData.data);
+
+      // Проверяем состояние теста в localStorage
+      const storedCompletion = localStorage.getItem(`test_${id}_completed`);
+      if (storedCompletion === "true") {
+        const storedAnswers =
+          JSON.parse(localStorage.getItem(`test_${id}_answers`)) || {};
+        const storedCorrectCount = parseInt(
+          localStorage.getItem(`test_${id}_correctCount`),
+          10
+        );
+
+        setTestCompleted(true);
+        setUserAnswers(storedAnswers);
+        setCorrectCount(storedCorrectCount);
+      }
     } catch (err) {
       console.log(err);
     }
@@ -41,28 +58,50 @@ const Test = ({ userData }) => {
     }
   }, [testData, userId]);
 
-  function generateRandomString(length) {
-    /**
-     * Генерирует случайную строку заданной длины.
-     *
-     * @param {number} length Длина желаемой строки.
-     * @returns {string} Случайная строка.
-     */
-
-    if (typeof length !== "number" || length < 0) {
-      throw new Error("Length must be a positive number");
+  function handleAnswer(questionId, answer) {
+    if (!testCompleted) {
+      setUserAnswers((prevAnswers) => ({
+        ...prevAnswers,
+        [questionId]: answer,
+      }));
     }
-    const characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let result = "";
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      result += characters.charAt(randomIndex);
-    }
-    return result;
   }
 
-  console.log(testData);
+  function finishTest() {
+    if (!testData) return;
+
+    const correctAnswersCount = testData.questions.reduce((count, question) => {
+      if (userAnswers[question._id] === question.correctAnswer) {
+        return count + 1;
+      }
+      return count;
+    }, 0);
+
+    setCorrectCount(correctAnswersCount);
+    setTestCompleted(true);
+
+    // Сохраняем данные в localStorage
+    localStorage.setItem(`test_${id}_completed`, "true");
+    localStorage.setItem(`test_${id}_answers`, JSON.stringify(userAnswers));
+    localStorage.setItem(
+      `test_${id}_correctCount`,
+      correctAnswersCount.toString()
+    );
+  }
+
+  // function generateRandomString(length) {
+  //   if (typeof length !== "number" || length < 0) {
+  //     throw new Error("Length must be a positive number");
+  //   }
+  //   const characters =
+  //     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  //   let result = "";
+  //   for (let i = 0; i < length; i++) {
+  //     const randomIndex = Math.floor(Math.random() * characters.length);
+  //     result += characters.charAt(randomIndex);
+  //   }
+  //   return result;
+  // }
 
   return (
     <section className={style.test}>
@@ -80,26 +119,53 @@ const Test = ({ userData }) => {
                   <h4>{item.questionText}</h4>
 
                   <div className={style.test__options}>
-                    {item.options.map((item) => {
-                      const id = generateRandomString(10);
-
-                      return (
-                        <div className={style.options__item}>
-                          <input type="radio" name={id} />
-                          <label>{item}</label>
-                        </div>
-                      );
-                    })}
+                    {testCompleted ? (
+                      <p>
+                        Ваш ответ: {userAnswers[item._id]}{" "}
+                        {userAnswers[item._id] === item.correctAnswer
+                          ? "(Правильно)"
+                          : `(Неправильно, правильный ответ: ${item.correctAnswer})`}
+                      </p>
+                    ) : (
+                      item.options.map((option, index) => {
+                        const inputId = `${item._id}-${index}`;
+                        return (
+                          <div key={inputId} className={style.options__item}>
+                            <input
+                              type="radio"
+                              name={item._id}
+                              value={option}
+                              id={inputId}
+                              onChange={() => handleAnswer(item._id, option)}
+                              disabled={testCompleted}
+                            />
+                            <label htmlFor={inputId}>{option}</label>
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
                 </li>
               ))}
             </ul>
 
-            <button
-              disabled={userData !== null && userData.discipline !== "Студент"}
-            >
-              Завершить тест
-            </button>
+            {!testCompleted && (
+              <button
+                onClick={finishTest}
+                disabled={
+                  userData !== null && userData.discipline !== "Студент"
+                }
+              >
+                Завершить тест
+              </button>
+            )}
+
+            {testCompleted && (
+              <p>
+                Вы ответили правильно на {correctCount} из{" "}
+                {testData.questions.length} вопросов.
+              </p>
+            )}
           </div>
         ) : (
           <p>Загрузка...</p>

@@ -7,6 +7,9 @@ import SignIn from "./pages/signin/SignIn";
 import Panel from "./pages/panel/Panel";
 import CreateTest from "./pages/panel/CreateTest";
 import Test from "./pages/test/Test";
+import DisciplineTests from "./pages/discipline_tests/DisciplineTests";
+import Tests from "./pages/panel/Tests";
+import AddMembers from "./pages/panel/AddMembers";
 
 function App() {
   const [findUserProcess, setFindUserProcess] = useState(null);
@@ -85,6 +88,18 @@ function App() {
                   <Route
                     path="/test/:id"
                     element={<Test userData={userData} />}
+                  />
+                  <Route
+                    path="/discipline-test/:id"
+                    element={<DisciplineTests userData={userData} />}
+                  />
+                  <Route
+                    path="/tests"
+                    element={<Tests userData={userData} />}
+                  />
+                  <Route
+                    path="/add-members"
+                    element={<AddMembers userData={userData} />}
                   />
                 </>
               )}

@@ -47,7 +47,7 @@ const Home = ({ userData }) => {
               <ul className={style.home__disciplines__loading}>
                 {disciplines !== null &&
                   disciplines.map((item) => (
-                    <Link to="">
+                    <Link to={`/discipline-test/${item._id}`}>
                       <li key={item._id}>
                         <h3>{item.title}</h3>
                         <p>
@@ -89,20 +89,15 @@ const Home = ({ userData }) => {
             </div>
           )}
 
-          <ul>
-            <li>
-              <p>Тестов пройдено: 240</p>
-            </li>
-
-            <li>
-              <p>Вы состоите в 3 дисциплинах</p>
-            </li>
-          </ul>
+          <ul></ul>
 
           <p>
             Приложение разработано студентами группы ИВТ-б-о-242 и ИВТ-б-о-241
             КФУ.{" "}
-            <Link to="https://github.com/ItsZeroFour/questionnaire/blob/main/README.md">
+            <Link
+              to="https://github.com/ItsZeroFour/questionnaire/blob/main/README.md"
+              target="_blank"
+            >
               Подробнее
             </Link>
           </p>
