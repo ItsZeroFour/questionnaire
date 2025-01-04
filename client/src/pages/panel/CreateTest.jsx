@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import style from "./style.module.scss";
 import axios from "../../utils/axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const CreateTest = ({ userData }) => {
   const [questions, setQuestions] = useState([
@@ -21,7 +21,10 @@ const CreateTest = ({ userData }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (userData.discipline === "Алгоритмизация и программирование") {
+    if (
+      userData &&
+      userData.discipline === "Алгоритмизация и программирование"
+    ) {
       setDiscipline("6771329c02d9e946ad847b77");
     } else {
       return navigate("/");
@@ -101,12 +104,15 @@ const CreateTest = ({ userData }) => {
   const getAllStudents = async () => {
     try {
       setIsStudentsLoading(true);
-      const getStudents = await axios.get("/user/get-students");
+      const getStudents = await axios.get(
+        "/discipline/get-members/6771329c02d9e946ad847b77"
+      );
       setIsStudentsLoading(false);
 
       setStudents(getStudents.data);
     } catch (err) {
       console.log(err);
+      setIsStudentsLoading(false);
       alert("Не удалось получить студентов");
     }
   };
@@ -114,14 +120,6 @@ const CreateTest = ({ userData }) => {
   useEffect(() => {
     getAllStudents();
   }, []);
-
-  console.log({
-    title: title,
-    description: description,
-    questions: renderQuestionsJSON(),
-    acceptable: acceptable,
-    disciplineId: discipline,
-  });
 
   const createTest = async () => {
     try {
@@ -160,6 +158,8 @@ const CreateTest = ({ userData }) => {
 
   return (
     <section className={style.create_test}>
+      <Link to="/">Вернутся домой</Link>
+
       <h2>Создать тест</h2>
 
       <input

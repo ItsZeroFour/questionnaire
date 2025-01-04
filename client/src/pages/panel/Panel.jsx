@@ -14,6 +14,20 @@ const Panel = () => {
       >
         Создать тест
       </button>
+
+      <button
+        className={style.panel__button}
+        onClick={() => navigate("/tests")}
+      >
+        Мои тесты
+      </button>
+
+      <button
+        className={style.panel__button}
+        onClick={() => navigate("/add-members")}
+      >
+        Добавить участников в дисциплину
+      </button>
     </section>
   );
 };
