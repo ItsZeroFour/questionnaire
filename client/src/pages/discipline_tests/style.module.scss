@@ -1,0 +1,28 @@
+.discipline_tests {
+  ul {
+    margin-top: 40px;
+
+    li {
+      padding: 20px;
+      background: #f1f1f1;
+      border-radius: 20px;
+
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+
+      transition: all 0.2s ease;
+
+      p {
+        &:last-child {
+          margin-top: 20px;
+        }
+      }
+
+      &:hover {
+        background: var(--color-blue);
+        color: var(--color-white);
+      }
+    }
+  }
+}

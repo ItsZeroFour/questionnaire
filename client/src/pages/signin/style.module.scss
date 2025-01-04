@@ -1,0 +1,134 @@
+.signin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+}
+
+.signin__left {
+  width: 40vw;
+  height: 90vh;
+  padding: 40px;
+  border-radius: 30px;
+
+  background: url("../../assets/images/auth/auth-img.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+
+  h1 {
+    font-size: 48px;
+    font-weight: 700;
+    font-family: "Unbounded-bd";
+    color: var(--color-white);
+    text-align: center;
+  }
+
+  p {
+    text-align: center;
+    font-size: 10px;
+    color: var(--color-white);
+    margin-top: auto;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+
+    width: 300px;
+    height: 300px;
+
+    left: 60%;
+    top: 60%;
+
+    z-index: -1;
+
+    background: var(--color-blue);
+    filter: blur(100px);
+
+    opacity: 0.5;
+
+    border-radius: 50%;
+  }
+
+  @media (max-width: 1240px) {
+    width: 60vw;
+  }
+
+  @media (max-width: 980px) {
+    display: none;
+  }
+}
+
+.signin__right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+
+  h2 {
+    font-size: 36px;
+    margin-bottom: 40px;
+  }
+
+  form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    input {
+      background: none;
+      border: 1px solid var(--color-black);
+      border-radius: 20px;
+      padding: 25px;
+
+      &::placeholder {
+        color: var(--color-black);
+      }
+    }
+  }
+
+  button {
+    margin-top: 30px;
+    padding: 25px;
+    background: var(--color-black);
+    color: var(--color-white);
+    border-radius: 20px;
+    width: 100%;
+  }
+}
+
+.register__right__wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  input {
+    width: 100%;
+    background: none;
+    padding: 25px;
+    border: 1px solid var(--color-black);
+    border-radius: 20px;
+  }
+
+  button {
+    padding: 25px;
+    background: var(--color-black);
+    border-radius: 20px;
+    color: var(--color-white);
+  }
+}
+
+.signin__error {
+  text-align: left;
+  color: #ff3f3f;
+  width: 100%;
+  margin-top: 10px;
+}

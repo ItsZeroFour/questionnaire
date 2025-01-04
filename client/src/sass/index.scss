@@ -1,0 +1,106 @@
+@import "./reset";
+@import "./vars";
+@import "./fonts";
+
+/* BASIC SETTINGS */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: inherit;
+}
+
+html {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Unbounded", sans-serif;
+  font-weight: 300;
+  font-size: 14px;
+
+  background: var(--color-white);
+  color: var(--color-black);
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-block-start: 75px;
+}
+
+::-webkit-scrollbar {
+  background: none;
+  width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-black);
+  border-radius: 5px;
+  opacity: 0.1;
+}
+
+.container {
+  max-width: 1320px;
+  padding: 0 10px;
+  margin: 0 auto;
+}
+
+.page {
+  margin-top: 20px;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+a,
+span,
+li {
+  color: inherit;
+  font-family: inherit;
+  line-height: 140%;
+}
+
+input,
+textarea,
+button {
+  font-family: "Unbounded", sans-serif;
+  font-size: 14px;
+}
+
+ul,
+li {
+  list-style-type: none;
+}
+
+.status {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  height: 100vh;
+}
+
+.status__wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+
+  h2 {
+    text-align: center;
+  }
+
+  button {
+    padding: 20px;
+    background: var(--color-black);
+    color: var(--color-white);
+    border-radius: 20px;
+  }
+}

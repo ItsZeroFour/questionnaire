@@ -1,0 +1,379 @@
+.register {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  height: 95vh;
+
+  gap: 20px;
+
+  .register__left {
+    width: 40vw;
+    height: 90vh;
+    padding: 40px;
+    border-radius: 30px;
+
+    background: url("../../assets/images/auth/auth-img.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    h1 {
+      font-size: 48px;
+      font-weight: 700;
+      font-family: "Unbounded-bd";
+      color: var(--color-white);
+      text-align: center;
+    }
+
+    p {
+      text-align: center;
+      font-size: 10px;
+      color: var(--color-white);
+      margin-top: auto;
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+
+      width: 300px;
+      height: 300px;
+
+      left: 60%;
+      top: 60%;
+
+      z-index: -1;
+
+      background: var(--color-blue);
+      filter: blur(100px);
+
+      opacity: 0.5;
+
+      border-radius: 50%;
+    }
+
+    @media (max-width: 1240px) {
+      width: 60vw;
+    }
+
+    @media (max-width: 980px) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 1060px) {
+    font-size: 12px;
+  }
+}
+
+@keyframes showSelect {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.register__right {
+  width: 100%;
+
+  h2 {
+    text-align: center;
+    font-size: 36px;
+
+    @media (max-width: 450px) {
+      font-size: 32px;
+    }
+
+    @media (max-width: 380px) {
+      font-size: 28px;
+    }
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 20px;
+
+    div {
+      display: flex;
+      gap: 20px;
+
+      input {
+        width: 50%;
+      }
+    }
+
+    input {
+      padding: 25px;
+      border: 1px solid var(--color-black);
+      border-radius: 20px;
+      letter-spacing: 1.2px;
+      background: none;
+
+      &::placeholder {
+        color: var(--color-black);
+      }
+
+      @media (max-width: 400px) {
+        padding: 20px;
+        font-size: 12px;
+      }
+    }
+
+    .register__select {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: relative;
+
+      & > button {
+        width: 100%;
+        padding: 25px;
+        background: none;
+        border: 1px solid var(--color-black);
+        border-radius: 20px;
+        text-align: left;
+        position: relative;
+
+        &::before {
+          content: "";
+          position: absolute;
+
+          left: 93%;
+          top: 33%;
+
+          width: 20px;
+          height: 20px;
+
+          background: url("../../assets/icons/auth/chevron-down.svg");
+          background-position: center;
+        }
+      }
+
+      ul {
+        animation-name: showSelect;
+        animation-duration: 0.3s;
+
+        z-index: 99;
+
+        position: absolute;
+        background: var(--color-white);
+        box-shadow: 0px 0px 10px var(--color-black);
+        padding: 20px;
+        width: 100%;
+
+        top: 110%;
+
+        border-radius: 20px;
+
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+
+        li {
+          font-size: 16px;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+          padding-bottom: 5px;
+
+          button {
+            background: none;
+            width: 100%;
+            text-align: left;
+            padding: 20px;
+            transition: all 0.2s ease;
+
+            &:hover {
+              background: rgba(0, 0, 0, 0.05);
+              border-radius: 5px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.register__right {
+  position: relative;
+
+  & > p {
+    font-size: 14px;
+    color: var(--color-black);
+    margin-top: 20px;
+
+    a {
+      font-weight: 700;
+      color: var(--color-blue);
+    }
+  }
+
+  & > button {
+    background: var(--color-black);
+    padding: 25px;
+    border-radius: 10px;
+    width: 100%;
+    margin-top: 20px;
+    color: var(--color-white);
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      opacity: 0.85;
+    }
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+
+    width: 300px;
+    height: 300px;
+
+    left: 60%;
+    top: -30%;
+
+    z-index: -1;
+
+    background: var(--color-blue);
+    filter: blur(100px);
+
+    opacity: 0.3;
+
+    border-radius: 50%;
+
+    @media (max-width: 1240px) {
+      display: none;
+    }
+  }
+}
+
+.register__another {
+  margin-top: 40px;
+
+  & > p {
+    text-align: center;
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+
+      right: 0;
+      top: 55%;
+
+      width: 30%;
+      height: 1px;
+
+      background: var(--color-black);
+
+      @media (max-width: 520px) {
+        width: 25%;
+      }
+
+      @media (max-width: 410px) {
+        width: 20%;
+      }
+
+      @media (max-width: 350px) {
+        width: 16%;
+      }
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+
+      left: 0;
+      top: 55%;
+
+      width: 30%;
+      height: 1px;
+
+      background: var(--color-black);
+
+      @media (max-width: 520px) {
+        width: 25%;
+      }
+
+      @media (max-width: 410px) {
+        width: 20%;
+      }
+
+      @media (max-width: 350px) {
+        width: 16%;
+      }
+    }
+  }
+
+  ul {
+    margin-top: 30px;
+    display: flex;
+    gap: 10px;
+
+    li {
+      width: 100%;
+      button {
+        width: 100%;
+        background: var(--color-black);
+        color: var(--color-white);
+
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        padding: 10px;
+        border-radius: 10px;
+
+        img {
+          width: 50px;
+          height: 50px;
+          object-fit: cover;
+          border-radius: 50%;
+        }
+      }
+
+      p {
+        text-align: left;
+        font-size: 16px;
+
+        @media (max-width: 1060px) {
+          font-size: 12px;
+        }
+
+        @media (max-width: 420px) {
+          font-size: 10px;
+        }
+      }
+    }
+  }
+}
+
+.register__right__wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  input {
+    width: 100%;
+    background: none;
+    padding: 25px;
+    border: 1px solid var(--color-black);
+    border-radius: 20px;
+  }
+
+  button {
+    padding: 25px;
+    background: var(--color-black);
+    border-radius: 20px;
+    color: var(--color-white);
+  }
+}
