@@ -6,6 +6,8 @@
 #include <jwt.h>
 #include <random>
 #include <ctime>
+#include <allmacros.h>
+
 
 // Функция для генерации уникального кода верификации
 std::string generateVerificationCode() {
