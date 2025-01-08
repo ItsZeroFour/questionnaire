@@ -2,200 +2,167 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"strings"
 	"time"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	tb "gopkg.in/telebot.v3"
 )
 
-var (
-	bot             *tgbotapi.BotAPI
-	mongoClient     *mongo.Client
-	pollsCollection *mongo.Collection
-	activePolls     = make(map[int64]map[string]interface{}) // Хранение активных опросов
-)
+type Poll struct {
+	ID        primitive.ObjectID `bson:"_id,omitempty"` // Добавим поле ID
+	UserID    int64              `bson:"user_id"`
+	Title     string             `bson:"title"`
+	Questions []Question         `bson:"questions"`
+	CreatedAt time.Time          `bson:"created_at"`
+}
+
+type Question struct {
+	QuestionText string   `bson:"questionText"`
+	Options      []string `bson:"options"`
+}
+
+var activePolls = make(map[int64]*Poll)
+var pollsCollection *mongo.Collection
 
 func main() {
-	// Загрузка переменных окружения
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Ошибка загрузки .env файла: %v", err)
+		log.Fatal("Error loading .env file")
 	}
 
 	apiToken := os.Getenv("TELEGRAM_API_TOKEN")
 	mongoURI := os.Getenv("MONGO_URI")
 
-	// Подключение к MongoDB
-	mongoClient, err = mongo.Connect(context.TODO(), options.Client().ApplyURI(mongoURI))
+	// Connect to MongoDB
+	clientOptions := options.Client().ApplyURI(mongoURI)
+	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
-		log.Fatalf("Ошибка подключения к MongoDB: %v", err)
+		log.Fatal(err)
 	}
-	defer mongoClient.Disconnect(context.TODO())
+	defer client.Disconnect(context.TODO())
 
-	// Подключение к коллекции
-	db := mongoClient.Database("Groupproject")
-	pollsCollection = db.Collection("polls")
+	pollsCollection = client.Database("test").Collection("tests")
 
-	// Инициализация бота
-	bot, err = tgbotapi.NewBotAPI(apiToken)
+	// Initialize Telegram bot
+	botSettings := tb.Settings{
+		Token:  apiToken,
+		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
+	}
+	bot, err := tb.NewBot(botSettings)
 	if err != nil {
-		log.Fatalf("Ошибка инициализации бота: %v", err)
+		log.Fatal(err)
 	}
 
-	bot.Debug = true
-	log.Printf("Бот авторизован как %s", bot.Self.UserName)
-
-	updates := bot.GetUpdatesChan(tgbotapi.NewUpdate(0))
-
-	for update := range updates {
-		if update.Message != nil {
-			handleMessage(update.Message)
-		}
-	}
-}
-
-func handleMessage(message *tgbotapi.Message) {
-	if message.IsCommand() {
-		switch message.Command() {
-		case "start":
-			startCommand(message)
-		}
-	} else if poll, exists := activePolls[message.Chat.ID]; exists {
-		if poll["state"] == "waiting_for_question" {
-			addPollQuestion(message)
-		} else if poll["state"] == "waiting_for_options" {
-			addPollOptions(message)
-		}
-	} else if message.Text == "📊 Пройти опрос" {
-		sendPolls(message)
-	} else if message.Text == "➕ Создать опрос" {
-		createPoll(message)
-	}
-}
-
-func startCommand(message *tgbotapi.Message) {
-	startKeyboard := tgbotapi.NewReplyKeyboard(
-		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("📊 Пройти опрос"),
-			tgbotapi.NewKeyboardButton("➕ Создать опрос"),
-		),
+	startKeyboard := &tb.ReplyMarkup{ResizeKeyboard: true}
+	btnCreatePoll := startKeyboard.Text("➕ Создать опрос")
+	btnTakePoll := startKeyboard.Text("📊 Пройти опрос")
+	startKeyboard.Reply(
+		startKeyboard.Row(btnCreatePoll, btnTakePoll),
 	)
-	msg := tgbotapi.NewMessage(message.Chat.ID, "Добро пожаловать! Выберите действие:")
-	msg.ReplyMarkup = startKeyboard
-	bot.Send(msg)
-}
 
-func createPoll(message *tgbotapi.Message) {
-	activePolls[message.Chat.ID] = map[string]interface{}{
-		"questions": []map[string]interface{}{},
-		"state":     "waiting_for_question",
-	}
-	msg := tgbotapi.NewMessage(message.Chat.ID, "Введите вопрос для создания опроса:")
-
-	// Создание кнопки для завершения опроса
-	keyboard := tgbotapi.NewInlineKeyboardMarkup(
-		[]tgbotapi.InlineKeyboardButton{
-			tgbotapi.NewInlineKeyboardButtonData("✅ Завершить создание опроса", "finish_poll"),
-		},
+	finishKeyboard := &tb.ReplyMarkup{ResizeKeyboard: true}
+	btnFinishPoll := finishKeyboard.Text("✅ Завершить создание опроса")
+	finishKeyboard.Reply(
+		finishKeyboard.Row(btnFinishPoll),
 	)
-	msg.ReplyMarkup = keyboard
 
-	bot.Send(msg)
-}
-
-func addPollQuestion(message *tgbotapi.Message) {
-	if message.Text == "✅ Завершить создание опроса" {
-		finishPoll(message)
-		return
-	}
-
-	poll := activePolls[message.Chat.ID]
-	questions := poll["questions"].([]map[string]interface{})
-	questions = append(questions, map[string]interface{}{
-		"question": message.Text,
-		"options":  []string{},
+	// Handlers
+	bot.Handle("/start", func(c tb.Context) error {
+		return c.Send("Добро пожаловать в бота для проведения массовых опросов!\nВыберите действие ниже:", startKeyboard)
 	})
-	activePolls[message.Chat.ID]["questions"] = questions
-	activePolls[message.Chat.ID]["state"] = "waiting_for_options"
-	msg := tgbotapi.NewMessage(message.Chat.ID, "Введите варианты ответа через запятую:")
-	bot.Send(msg)
-}
 
-func addPollOptions(message *tgbotapi.Message) {
-	if message.Text == "✅ Завершить создание опроса" {
-		finishPoll(message)
-		return
-	}
-
-	poll := activePolls[message.Chat.ID]
-	questions := poll["questions"].([]map[string]interface{})
-	options := strings.Split(message.Text, ",")
-	for i := range options {
-		options[i] = strings.TrimSpace(options[i])
-	}
-	questions[len(questions)-1]["options"] = options
-	activePolls[message.Chat.ID]["state"] = "waiting_for_question"
-	msg := tgbotapi.NewMessage(message.Chat.ID, "Вопрос добавлен. Введите следующий вопрос или завершите создание опроса.")
-	bot.Send(msg)
-}
-
-func finishPoll(message *tgbotapi.Message) {
-	poll := activePolls[message.Chat.ID]
-	delete(activePolls, message.Chat.ID)
-
-	// Сохранение опроса в базу данных
-	_, err := pollsCollection.InsertOne(context.TODO(), bson.M{
-		"user_id":    message.Chat.ID,
-		"questions":  poll["questions"],
-		"created_at": time.Now(),
+	bot.Handle(&btnCreatePoll, func(c tb.Context) error {
+		userID := c.Sender().ID
+		activePolls[userID] = &Poll{
+			UserID:    userID,
+			Questions: []Question{},
+		}
+		return c.Send("Введите название (title) для нового опроса:")
 	})
-	if err != nil {
-		msg := tgbotapi.NewMessage(message.Chat.ID, "Ошибка сохранения опроса.")
-		bot.Send(msg)
-		return
-	}
 
-	msg := tgbotapi.NewMessage(message.Chat.ID, "Опрос успешно сохранен.")
-	bot.Send(msg)
-}
-
-func sendPolls(message *tgbotapi.Message) {
-	cursor, err := pollsCollection.Find(context.TODO(), bson.M{})
-	if err != nil {
-		log.Printf("Ошибка получения опросов: %v", err)
-		msg := tgbotapi.NewMessage(message.Chat.ID, "Ошибка получения опросов.")
-		bot.Send(msg)
-		return
-	}
-	defer cursor.Close(context.TODO())
-
-	for cursor.Next(context.TODO()) {
-		var poll bson.M
-		if err := cursor.Decode(&poll); err != nil {
-			log.Printf("Ошибка декодирования опроса: %v", err)
-			continue
+	bot.Handle(tb.OnText, func(c tb.Context) error {
+		userID := c.Sender().ID
+		activePoll, exists := activePolls[userID]
+		if !exists {
+			return nil
 		}
 
-		questions := poll["questions"].([]interface{})
-		for _, q := range questions {
-			question := q.(bson.M)
-			text := question["question"].(string)
-			options := question["options"].([]interface{})
+		text := c.Text()
+		switch activePoll.Title {
+		case "":
+			activePoll.Title = text
+			return c.Send(fmt.Sprintf("Название опроса установлено: %s\nТеперь введите вопрос для опроса:", text), finishKeyboard)
+		default:
+			if len(activePoll.Questions) > 0 && len(activePoll.Questions[len(activePoll.Questions)-1].Options) == 0 {
+				options := strings.Split(text, ",")
+				for i := range options {
+					options[i] = strings.TrimSpace(options[i])
+				}
+				activePoll.Questions[len(activePoll.Questions)-1].Options = options
+				return c.Send(fmt.Sprintf("Варианты добавлены: %s\nВведите следующий вопрос или завершите создание опроса.", strings.Join(options, ", ")), finishKeyboard)
+			} else {
+				activePoll.Questions = append(activePoll.Questions, Question{QuestionText: text})
+				return c.Send(fmt.Sprintf("Вопрос добавлен: %s\nТеперь введите варианты ответа через запятую:", text))
+			}
+		}
+	})
 
-			optionsText := []string{}
-			for _, opt := range options {
-				optionsText = append(optionsText, opt.(string))
+	bot.Handle(&btnFinishPoll, func(c tb.Context) error {
+		userID := c.Sender().ID
+		activePoll, exists := activePolls[userID]
+		if !exists || len(activePoll.Questions) == 0 {
+			return c.Send("Вы ещё не добавили ни одного вопроса!")
+		}
+
+		// Save poll to MongoDB
+		activePoll.CreatedAt = time.Now()
+		_, err := pollsCollection.InsertOne(context.TODO(), activePoll)
+		if err != nil {
+			log.Println("Error saving poll:", err)
+			return c.Send("Произошла ошибка при сохранении опроса.")
+		}
+
+		delete(activePolls, userID)
+
+		summary := fmt.Sprintf("Опрос завершен и сохранен в базе данных!\nНазвание: %s\n", activePoll.Title)
+		for i, q := range activePoll.Questions {
+			summary += fmt.Sprintf("%d. %s\nВарианты: %s\n", i+1, q.QuestionText, strings.Join(q.Options, ", "))
+		}
+		return c.Send(summary, startKeyboard)
+	})
+
+	bot.Handle(&btnTakePoll, func(c tb.Context) error {
+		cursor, err := pollsCollection.Find(context.TODO(), bson.M{})
+		if err != nil {
+			log.Println("Error fetching polls:", err)
+			return c.Send("Произошла ошибка при получении опросов.")
+		}
+		defer cursor.Close(context.TODO())
+
+		inlineKeyboard := &tb.ReplyMarkup{}
+		for cursor.Next(context.TODO()) {
+			var poll Poll
+			if err := cursor.Decode(&poll); err != nil {
+				continue
 			}
 
-			pollMsg := tgbotapi.NewPoll(message.Chat.ID, text, optionsText...)
-			pollMsg.IsAnonymous = false
-			bot.Send(pollMsg)
+			// Используем poll.ID для создания уникальных идентификаторов для кнопок
+			btn := inlineKeyboard.Data(poll.Title, fmt.Sprintf("poll_%s", poll.ID.Hex()))
+			inlineKeyboard.Inline(
+				inlineKeyboard.Row(btn),
+			)
 		}
-	}
+
+		return c.Send("Выберите опрос для участия:", inlineKeyboard)
+	})
+
+	bot.Start()
 }
