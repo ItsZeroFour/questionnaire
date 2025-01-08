@@ -2,20 +2,10 @@
 #include <string>
 #include <bcrypt.h>
 #include <mongo/client/dbclient.h>
-#include <curl/curl.h>
-#include <jwt-cpp/jwt.h>
+#include <curl.h>
+#include <jwt.h>
 #include <random>
 #include <ctime>
-
-// Подключение к MongoDB
-#define MONGO_DB_URI "mongodb+srv://questionnaire:%3Cdsf32wdfhsuhR7fdw%3E@cluster0.zjqrx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
- // юри нашей 
-
-// Константы для SMTP
-#define SMTP_SERVER "smtp.yandex.com" // Замените на SMTP сервер
-#define SMTP_PORT 587
-#define SMTP_EMAIL "your_email@yandex.com" // Замените на ваш email
-#define SMTP_PASSWORD "your_password" // Замените на ваш пароль
 
 // Функция для генерации уникального кода верификации
 std::string generateVerificationCode() {
@@ -47,10 +37,10 @@ void sendVerificationEmail(const std::string& email, const std::string& code) {
     curl = curl_easy_init();
     
     if(curl) {
-        curl_easy_setopt(curl, CURLOPT_URL, "smtp://smtp.yandex.com");  // Замените на ваш SMTP сервер
-        curl_easy_setopt(curl, CURLOPT_MAIL_FROM, "your_email@yandex.com"); // Замените на ваш email
-        curl_easy_setopt(curl, CURLOPT_USERNAME, "your_email@yandex.com"); // Замените на ваш email
-        curl_easy_setopt(curl, CURLOPT_PASSWORD, "your_password"); // Замените на ваш пароль
+        curl_easy_setopt(curl, CURLOPT_URL, SMTP_SERVER);  
+        curl_easy_setopt(curl, CURLOPT_MAIL_FROM, SMTP_EMAIL); 
+        curl_easy_setopt(curl, CURLOPT_USERNAME, SMTP_EMAIL); 
+        curl_easy_setopt(curl, CURLOPT_PASSWORD, SMTP_PASSWORD);
         curl_easy_setopt(curl, CURLOPT_PORT, SMTP_PORT);
         
         struct curl_slist* recipients = NULL;
