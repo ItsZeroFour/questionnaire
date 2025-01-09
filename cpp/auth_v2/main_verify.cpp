@@ -94,3 +94,105 @@ void registerUser(const std::string& firstName, const std::string& lastName, con
 
         // Вставка нового пользователя в коллекцию
         conn.insert("users", user.obj());
+
+        bool verifyCode(const std::string& email, const std::string& code) {
+    try {
+        mongo::DBClientConnection conn;
+        conn.connect(MONGO_DB_URI);  // Подключение к базе данных MongoDB
+
+        // Поиск пользователя по email
+        mongo::BSONObj query = BSON("email" << email);
+        mongo::BSONObj user = conn.findOne("users", query);
+
+        std::string storedCode = user.getStringField("verificationCode");
+
+        // Сравнение кодов
+        if (storedCode == code) {
+            // Обновление статуса верификации
+            mongo::BSONObj update = BSON("$set" << BSON("verified" << true));
+            conn.update("users", query, update);
+            std::cout << "Код подтверждения верен! Пользователь подтвержден." << std::endl;
+            return true;
+        } else {
+            std::cerr << "Неверный код!" << std::endl;
+            return false;
+        }
+    } catch (const mongo::DBException& e) {
+        std::cerr << "Ошибка при верификации кода: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+// Вход пользователя
+void loginUser(const std::string& email, const std::string& password) {
+    try {
+        mongo::DBClientConnection conn;
+        conn.connect(MONGO_DB_URI);  // Подключение к базе данных MongoDB
+
+        // Поиск пользователя по email
+        mongo::BSONObj query = BSON("email" << email);
+        mongo::BSONObj user = conn.findOne("users", query);
+
+        if (user.isEmpty()) {
+            std::cerr << "Пользователь с таким email не найден!" << std::endl;
+            return;
+        }
+
+        // Проверка пароля
+        std::string storedPassword = user.getStringField("password");
+        if (bcrypt::validatePassword(password, storedPassword)) {
+            // Генерация нового кода верификации
+            std::string verificationCode = generateVerificationCode();
+
+            // Отправка email с кодом верификации
+            sendVerificationEmail(email, verificationCode);
+
+            // Обновление документа пользователя с новым кодом
+            mongo::BSONObj update = BSON("$set" << BSON("verificationCode" << verificationCode));
+            conn.update("users", query, update);
+
+            std::cout << "Вход успешен, код отправлен на почту!" << std::endl;
+        } else {
+            std::cerr << "Неверный пароль!" << std::endl;
+        }
+    } catch (const mongo::DBException& e) {
+        std::cerr << "Ошибка при входе: " << e.what() << std::endl;
+    }
+}
+
+int main() {
+    int choice;
+
+    std::cout << "1. Войти\n";
+    std::cout << "2. Зарегистрироваться\n";
+    std::cout << "Выберите действие (1 или 2): ";
+    std::cin >> choice;
+
+    if (choice == 1) {
+        // Вход
+        std::string email, password;
+        std::cout << "Введите email: ";
+        std::cin >> email;
+        std::cout << "Введите пароль: ";
+        std::cin >> password;
+
+        loginUser(email, password);
+
+    } else if (choice == 2) {
+        // Регистрация
+        std::string firstName, lastName, email, password, discipline;
+        std::cout << "Введите имя: ";
+        std::cin >> firstName;
+        std::cout << "Введите фамилию: ";
+        std::cin >> lastName;
+        std::cout << "Введите email: ";
+        std::cin >> email;
+        std::cout << "Введите пароль: ";
+        std::cin >> password;
+        std::cout << "Введите дисциплину: ";
+        std::cin >> discipline;
+
+        registerUser(firstName, lastName, email, password, discipline);
+        
+    return 0;
+}

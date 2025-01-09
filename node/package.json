@@ -21,7 +21,7 @@
   "scripts": {
     "start:dev": "nodemon server.js"
   },
-  "author": "undefined <t.me/itsZeroFour>",
+  "author": "<t.me/itsZeroFour>",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
