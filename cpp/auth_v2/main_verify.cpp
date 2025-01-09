@@ -82,3 +82,15 @@ void registerUser(const std::string& firstName, const std::string& lastName, con
 
         // Хеширование пароля
         std::string hashedPassword = hashPassword(password);
+
+        // Создание нового документа пользователя
+        mongo::BSONObjBuilder user;
+        user.append("firstName", firstName);
+        user.append("lastName", lastName);
+        user.append("email", email);
+        user.append("password", hashedPassword);
+        user.append("discipline", discipline);
+        user.append("verified", false);
+
+        // Вставка нового пользователя в коллекцию
+        conn.insert("users", user.obj());
