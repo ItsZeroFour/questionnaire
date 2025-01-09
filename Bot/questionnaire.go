@@ -41,7 +41,7 @@ func main() {
 	apiToken := os.Getenv("TELEGRAM_API_TOKEN")
 	mongoURI := os.Getenv("MONGO_URI")
 
-	// Connect to MongoDB
+	// Подключил к MongoDB
 	clientOptions := options.Client().ApplyURI(mongoURI)
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
@@ -51,7 +51,7 @@ func main() {
 
 	pollsCollection = client.Database("test").Collection("tests")
 
-	// Initialize Telegram bot
+	// Начало работы бота
 	botSettings := tb.Settings{
 		Token:  apiToken,
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
@@ -74,7 +74,7 @@ func main() {
 		finishKeyboard.Row(btnFinishPoll),
 	)
 
-	// Handlers
+	// Сообщения
 	bot.Handle("/start", func(c tb.Context) error {
 		return c.Send("Добро пожаловать в бота для проведения массовых опросов!\nВыберите действие ниже:", startKeyboard)
 	})
@@ -122,7 +122,7 @@ func main() {
 			return c.Send("Вы ещё не добавили ни одного вопроса!")
 		}
 
-		// Save poll to MongoDB
+		// Сохранение опроса в БД
 		activePoll.CreatedAt = time.Now()
 		_, err := pollsCollection.InsertOne(context.TODO(), activePoll)
 		if err != nil {
