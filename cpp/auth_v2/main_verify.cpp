@@ -1,12 +1,12 @@
 #include <iostream>
 #include <string>
 #include <bcrypt.h>
-#include <mongo/client/dbclient.h>
+#include <dbclient.h>
 #include <curl.h>
 #include <jwt.h>
 #include <random>
 #include <ctime>
-#include <allmacros.h>
+
 
 
 // Функция для генерации уникального кода верификации
