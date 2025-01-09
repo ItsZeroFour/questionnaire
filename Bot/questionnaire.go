@@ -142,25 +142,32 @@ func main() {
 	bot.Handle(&btnTakePoll, func(c tb.Context) error {
 		cursor, err := pollsCollection.Find(context.TODO(), bson.M{})
 		if err != nil {
-			log.Println("Error fetching polls:", err)
-			return c.Send("Произошла ошибка при получении опросов.")
+			return c.Send("Ошибка при получении опросов.")
 		}
-		defer cursor.Close(context.TODO())
-
-		inlineKeyboard := &tb.ReplyMarkup{}
 		for cursor.Next(context.TODO()) {
 			var poll Poll
 			if err := cursor.Decode(&poll); err != nil {
 				continue
 			}
-
-			// Используем poll.ID для создания уникальных идентификаторов для кнопок
-			btn := inlineKeyboard.Data(poll.Title, fmt.Sprintf("poll_%s", poll.ID.Hex()))
-			inlineKeyboard.Inline(
-				inlineKeyboard.Row(btn),
-			)
+			// Логика обработки данных
 		}
+		cursor.Close(context.TODO()) // Закрытие после использования
 
+	
+		inlineKeyboard := &tb.ReplyMarkup{}
+		for cursor.Next(context.TODO()) {
+			var poll Poll
+			if err := cursor.Decode(&poll); err != nil { continue }
+			btn := inlineKeyboard.Data(poll.Title, fmt.Sprintf("poll_%s", poll.ID.Hex()))
+			
+			// Добавлен обработчик кнопок
+			bot.Handle(&btn, func(ctx tb.Context) error {
+				return ctx.Send(fmt.Sprintf("Вы выбрали опрос: %s", poll.Title))
+			})
+	
+			inlineKeyboard.Inline(inlineKeyboard.Row(btn))
+		}
+	
 		return c.Send("Выберите опрос для участия:", inlineKeyboard)
 	})
 
