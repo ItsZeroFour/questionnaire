@@ -41,7 +41,7 @@ func main() {
 	apiToken := os.Getenv("TELEGRAM_API_TOKEN")
 	mongoURI := os.Getenv("MONGO_URI")
 
-	// Connect to MongoDB
+	// Подключил к MongoDB
 	clientOptions := options.Client().ApplyURI(mongoURI)
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
@@ -51,7 +51,7 @@ func main() {
 
 	pollsCollection = client.Database("test").Collection("tests")
 
-	// Initialize Telegram bot
+	// Начало работы бота
 	botSettings := tb.Settings{
 		Token:  apiToken,
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
@@ -74,7 +74,7 @@ func main() {
 		finishKeyboard.Row(btnFinishPoll),
 	)
 
-	// Handlers
+	// Сообщения
 	bot.Handle("/start", func(c tb.Context) error {
 		return c.Send("Добро пожаловать в бота для проведения массовых опросов!\nВыберите действие ниже:", startKeyboard)
 	})
@@ -122,7 +122,7 @@ func main() {
 			return c.Send("Вы ещё не добавили ни одного вопроса!")
 		}
 
-		// Save poll to MongoDB
+		// Сохранение опроса в БД
 		activePoll.CreatedAt = time.Now()
 		_, err := pollsCollection.InsertOne(context.TODO(), activePoll)
 		if err != nil {
@@ -142,25 +142,32 @@ func main() {
 	bot.Handle(&btnTakePoll, func(c tb.Context) error {
 		cursor, err := pollsCollection.Find(context.TODO(), bson.M{})
 		if err != nil {
-			log.Println("Error fetching polls:", err)
-			return c.Send("Произошла ошибка при получении опросов.")
+			return c.Send("Ошибка при получении опросов.")
 		}
-		defer cursor.Close(context.TODO())
-
-		inlineKeyboard := &tb.ReplyMarkup{}
 		for cursor.Next(context.TODO()) {
 			var poll Poll
 			if err := cursor.Decode(&poll); err != nil {
 				continue
 			}
-
-			// Используем poll.ID для создания уникальных идентификаторов для кнопок
-			btn := inlineKeyboard.Data(poll.Title, fmt.Sprintf("poll_%s", poll.ID.Hex()))
-			inlineKeyboard.Inline(
-				inlineKeyboard.Row(btn),
-			)
+			// Логика обработки данных
 		}
+		cursor.Close(context.TODO()) // Закрытие после использования
 
+	
+		inlineKeyboard := &tb.ReplyMarkup{}
+		for cursor.Next(context.TODO()) {
+			var poll Poll
+			if err := cursor.Decode(&poll); err != nil { continue }
+			btn := inlineKeyboard.Data(poll.Title, fmt.Sprintf("poll_%s", poll.ID.Hex()))
+			
+			// Добавлен обработчик кнопок
+			bot.Handle(&btn, func(ctx tb.Context) error {
+				return ctx.Send(fmt.Sprintf("Вы выбрали опрос: %s", poll.Title))
+			})
+	
+			inlineKeyboard.Inline(inlineKeyboard.Row(btn))
+		}
+	
 		return c.Send("Выберите опрос для участия:", inlineKeyboard)
 	})
 

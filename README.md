@@ -62,4 +62,11 @@ _<a href="https://www.figma.com/design/y7UPbSwswCxkzc5aPfdCty/Untitled?node-id=0
 
 > P.S.
 
+<<<<<<< HEAD
 <a href="https://github.com/ItsZeroFour/questionnaire/blob/main/info/info.md">Основная информация для команды и ход работы над проектом</a>
+=======
+<a href="https://github.com/ItsZeroFour/questionnaire/blob/main/info/info.md">Основная информация для команды</a>
+
+
+Hello world 2
+>>>>>>> 9bcde0b (hello)
